@@ -142,15 +142,41 @@ function dbGameToGameEntity(
       if (!game.winner) {
         throw new Error("winner shoud be in game over");
       }
+      
+      const field = fieldSchema.parse(game.field);
+      const winPositions = calculateWinnerPositions(field);
+      
       return {
         id: game.id,
         players: players,
         status: game.status,
-        field: fieldSchema.parse(game.field),
+        field: field,
         winner: dbPlayerToPlayer(game.winner),
+        winPositions: winPositions,
       } satisfies GameOverEntity;
     }
   }
+}
+
+function calculateWinnerPositions(field: Array<string | null>): number[] {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  
+  for (const [a, b, c] of lines) {
+    if (field[a] && field[a] === field[b] && field[a] === field[c]) {
+      return [a, b, c];
+    }
+  }
+  
+  return [];
 }
 
 export const dbPlayerToPlayer = (

@@ -27,6 +27,7 @@ export type GameOverEntity = {
   field: Field;
   status: "gameOver";
   winner: PlayerEntity;
+  winPositions: number[];
 };
 
 export type GameOverDrawEntity = {
@@ -97,12 +98,14 @@ export const doStep = ({
     i === index ? currentSymbol : cell,
   );
 
-  if (calculateWinner(newField)) {
+  const winResult = calculateWinner(newField);
+  if (winResult) {
     return right({
       ...game,
       field: newField,
       winner: player,
       status: "gameOver",
+      winPositions: winResult.winPositions,
     } satisfies GameOverEntity);
   }
 
@@ -144,7 +147,10 @@ function calculateWinner(squares: Field) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return {
+        winner: squares[a],
+        winPositions: [a, b, c],
+      };
     }
   }
   return null;
